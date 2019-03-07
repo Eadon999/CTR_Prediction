@@ -60,7 +60,7 @@ class DatePreprocess:
     def run_generate(self):
         features, labels = self.generate_sparse_data(self.df, self.columns_name)
         CLASS = 2
-        onehot_func = tf.one_hot(labels, CLASS, 1, 0, dtype=tf.float32)
+        onehot_func = tf.one_hot(labels, CLASS, 1.0, 0.0, dtype=tf.float32)
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
             labels_onehot = sess.run(onehot_func)

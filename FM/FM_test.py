@@ -68,13 +68,15 @@ class FM(object):
     def add_loss(self):
         cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.y,
                                                                        labels=tf.argmax(self.y_out, 1))
+        self.cross_entropy = cross_entropy
         mean_loss = tf.reduce_mean(cross_entropy)
         self.loss = mean_loss
         tf.summary.scalar('loss', self.loss)
 
     def add_accuracy(self):
         # accuracy
-        self.correct_prediction = tf.equal(tf.cast(tf.argmax(model.y_out, 1), tf.float32), model.y)
+        self.correct_prediction = tf.equal(tf.cast(tf.argmax(model.y_out, 1), tf.float32),
+                                           tf.cast(tf.argmax(model.y, 1), tf.float32))
         self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32))
         # add summary to accuracy
         tf.summary.scalar('accuracy', self.accuracy)
@@ -95,7 +97,7 @@ class FM(object):
         self.inference()
         self.add_loss()
         self.add_accuracy()
-        self.train()
+        # self.train()
 
 
 def check_restore_parameters(sess, saver):
@@ -119,7 +121,7 @@ def train_model(sess, model, epochs=10, print_every=50):
     # get number of batches
     num_batches = len(y)
     indices = np.array(x, dtype=np.int64)
-    values = np.array([1.0] * len(x), dtype=np.float64)
+    values = np.array([1] * len(x), dtype=np.float32)
     shape = np.array([9, 12], dtype=np.int64)
     for e in range(epochs):
         num_samples = 0
@@ -130,12 +132,22 @@ def train_model(sess, model, epochs=10, print_every=50):
         feed_dict = {model.X: tf.SparseTensorValue(indices, values, shape),
                      model.y: batch_y,
                      model.keep_prob: 1.0}
-
+        '''
         loss, accuracy, summary, global_step, _ = sess.run([model.loss, model.accuracy,
                                                             merged, model.global_step,
                                                             model.train_op], feed_dict=feed_dict)
+        '''
+
+        entropy_loss = sess.run(model.cross_entropy, feed_dict=feed_dict)
+        print('entrop:', entropy_loss)
+        print('+++++++++++++++++++++++++')
+        loss = sess.run(model.loss, feed_dict=feed_dict)
+        print('loss', loss)
+        acc = sess.run(model.X, feed_dict=feed_dict)
+        print('acc', acc)
 
         # Record summaries and train.csv-set accuracy
+        '''
         train_writer.add_summary(summary, global_step=global_step)
         # print training loss and accuracy
         if global_step % print_every == 0:
@@ -145,6 +157,7 @@ def train_model(sess, model, epochs=10, print_every=50):
         # print loss of one epoch
         total_loss = np.sum(losses) / num_samples
         print("Epoch {1}, Overall loss = {0:.3g}".format(total_loss, e + 1))
+        '''
 
 
 def test_model(sess, model, print_every=50):
@@ -196,7 +209,7 @@ if __name__ == '__main__':
               'device_conn_type', 'click']
     # initialize the model
     config = {}
-    config['lr'] = 0.01
+    config['lr'] = 0.001
     config['batch_size'] = 512
     config['reg_l1'] = 2e-2
     config['reg_l2'] = 0
