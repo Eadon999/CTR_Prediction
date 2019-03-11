@@ -66,7 +66,7 @@ class FM(object):
         self.y_out_prob = tf.nn.softmax(self.y_out)
 
     def add_loss(self):
-        # labels的每一行为真实类别的索引
+        # labels的每一行为真实类别的索引, logits is not yet softmax
         cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=model.y_out,
                                                                        labels=tf.argmax(self.y, 1))
         self.cross_entropy = cross_entropy
