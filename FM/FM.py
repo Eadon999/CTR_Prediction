@@ -92,6 +92,12 @@ class FM(object):
         with tf.control_dependencies(extra_update_ops):
             self.train_op = optimizer.minimize(self.loss, global_step=self.global_step)
 
+    """
+    def gd_train(self):
+        self.global_step = tf.Variable(0, trainable=False)
+        self.train_op = tf.train.GradientDescentOptimizer(0.001).minimize(self.loss)
+    """
+
     def build_graph(self):
         """build graph for model"""
         self.add_placeholders()
@@ -99,6 +105,7 @@ class FM(object):
         self.add_loss()
         self.add_accuracy()
         self.train()
+        # self.gd_train()
 
 
 def check_restore_parameters(sess, saver):
@@ -125,8 +132,6 @@ def train_model(sess, model, epochs=10, print_every=50):
     values = np.array([1] * len(x), dtype=np.float32)
     shape = np.array([9, 12], dtype=np.int64)
     for e in range(epochs):
-        num_samples = 0
-        losses = []
         # batch_size data
         batch_y = y
         # create a feed dictionary for this batch
@@ -185,10 +190,12 @@ def test_model(sess, model, print_every=50):
 if __name__ == '__main__':
     '''launching TensorBoard: tensorboard --logdir=path/to/log-directory'''
     # get mode (train or test)
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode', help='train or test', type=str)
     args = parser.parse_args()
     mode = args.mode
+    """
     mode = 'train'
     # original fields
     fields = ['hour', 'C1', 'C14', 'C15', 'C16', 'C17', 'C18', 'C19', 'C20', 'C21',

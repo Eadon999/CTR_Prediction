@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @Time   : 3/4/19 2:28 PM
 # @Author : YangXiangDong
-# @File   : test.py
+# @File   : categorical_column_with_hash_bucket.py
 
 import tensorflow as tf
 from tensorflow.python.feature_column.feature_column import _LazyBuilder
