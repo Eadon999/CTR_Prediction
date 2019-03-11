@@ -6,12 +6,12 @@ curPath = os.path.abspath(os.path.dirname(__file__))
 rootPath = os.path.split(curPath)[0]
 sys.path.append(rootPath)
 import tensorflow as tf
-from FM.utilities import *
 import logging
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 import numpy as np
 import argparse
+from sparse_data.generate_data import DatePreprocess
 
 
 class FM(object):
@@ -31,11 +31,11 @@ class FM(object):
         self.reg_l1 = config['reg_l1']
         self.reg_l2 = config['reg_l2']
         # num of features
-        self.p = feature_length
+        self.p = config['feature_len']
 
     def add_placeholders(self):
         self.X = tf.sparse_placeholder('float32', [None, self.p])
-        self.y = tf.placeholder('int64', [None, ])
+        self.y = tf.placeholder('float32', [None, 2])
         self.keep_prob = tf.placeholder('float32')
 
     def inference(self):
@@ -66,14 +66,18 @@ class FM(object):
         self.y_out_prob = tf.nn.softmax(self.y_out)
 
     def add_loss(self):
-        cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.y, logits=self.y_out)
-        mean_loss = tf.reduce_mean(cross_entropy)
+        # labels的每一行为真实类别的索引
+        cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=model.y_out,
+                                                                       labels=tf.argmax(self.y, 1))
+        self.cross_entropy = cross_entropy
+        mean_loss = tf.reduce_mean(self.cross_entropy)
         self.loss = mean_loss
         tf.summary.scalar('loss', self.loss)
 
     def add_accuracy(self):
         # accuracy
-        self.correct_prediction = tf.equal(tf.cast(tf.argmax(model.y_out, 1), tf.int64), model.y)
+        self.correct_prediction = tf.equal(tf.cast(tf.argmax(model.y_out, 1), tf.float32),
+                                           tf.cast(tf.argmax(model.y, 1), tf.float32))
         self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32))
         # add summary to accuracy
         tf.summary.scalar('accuracy', self.accuracy)
@@ -109,47 +113,39 @@ def check_restore_parameters(sess, saver):
 
 def train_model(sess, model, epochs=10, print_every=50):
     """training model"""
+    data_pro = DatePreprocess()
     # Merge all the summaries and write them out to train_logs
     merged = tf.summary.merge_all()
     train_writer = tf.summary.FileWriter('train_logs', sess.graph)
     # get sparse training data
-    with open('../avazu_CTR/train_sparse_data_frac_0.01.pkl', 'rb') as f:
-        sparse_data_fraction = pickle.load(f)
+    x, y = data_pro.run_generate()
     # get number of batches
-    num_batches = len(sparse_data_fraction)
-
+    num_batches = len(y)
+    indices = np.array(x, dtype=np.int64)
+    values = np.array([1] * len(x), dtype=np.float32)
+    shape = np.array([9, 12], dtype=np.int64)
     for e in range(epochs):
         num_samples = 0
         losses = []
-        for ibatch in range(num_batches):
-            # batch_size data
-            batch_y = sparse_data_fraction[ibatch]['labels']
-            batch_y = np.array(batch_y)
-            actual_batch_size = len(batch_y)
-            batch_indexes = np.array(sparse_data_fraction[ibatch]['indexes'], dtype=np.int64)
-            batch_shape = np.array([actual_batch_size, feature_length], dtype=np.int64)
-            batch_values = np.ones(len(batch_indexes), dtype=np.float32)
-            # create a feed dictionary for this batch
-            feed_dict = {model.X: (batch_indexes, batch_values, batch_shape),
-                         model.y: batch_y,
-                         model.keep_prob: 1.0}
+        # batch_size data
+        batch_y = y
+        # create a feed dictionary for this batch
+        feed_dict = {model.X: tf.SparseTensorValue(indices, values, shape),
+                     model.y: batch_y,
+                     model.keep_prob: 1.0}
 
-            loss, accuracy, summary, global_step, _ = sess.run([model.loss, model.accuracy,
-                                                                merged, model.global_step,
-                                                                model.train_op], feed_dict=feed_dict)
-            # aggregate performance stats
-            losses.append(loss * actual_batch_size)
-            num_samples += actual_batch_size
-            # Record summaries and train.csv-set accuracy
-            train_writer.add_summary(summary, global_step=global_step)
-            # print training loss and accuracy
-            if global_step % print_every == 0:
-                logging.info("Iteration {0}: with minibatch training loss = {1} and accuracy of {2}"
-                             .format(global_step, loss, accuracy))
-                saver.save(sess, "checkpoints/model", global_step=global_step)
-        # print loss of one epoch
-        total_loss = np.sum(losses) / num_samples
-        print("Epoch {1}, Overall loss = {0:.3g}".format(total_loss, e + 1))
+        loss, accuracy, summary, global_step, _ = sess.run([model.loss, model.accuracy,
+                                                            merged, model.global_step,
+                                                            model.train_op], feed_dict=feed_dict)
+        print("Epoch:{}, loss:{}, accuracy:{}".format(e, loss, accuracy))
+
+        # Record summaries and train.csv-set accuracy
+        train_writer.add_summary(summary, global_step=global_step)
+        # print training loss and accuracy
+        if global_step % print_every == 0:
+            logging.info("Iteration {0}: with minibatch training loss = {1} and accuracy of {2}"
+                         .format(global_step, loss, accuracy))
+            saver.save(sess, "checkpoints/model", global_step=global_step)
 
 
 def test_model(sess, model, print_every=50):
@@ -193,28 +189,21 @@ if __name__ == '__main__':
     parser.add_argument('--mode', help='train or test', type=str)
     args = parser.parse_args()
     mode = args.mode
+    mode = 'train'
     # original fields
     fields = ['hour', 'C1', 'C14', 'C15', 'C16', 'C17', 'C18', 'C19', 'C20', 'C21',
               'banner_pos', 'site_id', 'site_domain', 'site_category', 'app_domain',
               'app_id', 'app_category', 'device_model', 'device_type', 'device_id',
               'device_conn_type', 'click']
-    # loading dicts
-    fields_dict = {}
-    for field in fields:
-        with open('dicts/' + field + '.pkl', 'rb') as f:
-            fields_dict[field] = pickle.load(f)
-    # length of representation
-    train_array_length = max(fields_dict['click'].values()) + 1
-    test_array_length = train_array_length - 2
     # initialize the model
     config = {}
-    config['lr'] = 0.01
+    config['lr'] = 0.001
     config['batch_size'] = 512
     config['reg_l1'] = 2e-2
     config['reg_l2'] = 0
     config['k'] = 40
+    config['feature_len'] = 12
     # get feature length
-    feature_length = test_array_length
     # initialize FM model
     model = FM(config)
     # build graph for model
