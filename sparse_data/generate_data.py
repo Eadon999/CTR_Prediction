@@ -12,7 +12,7 @@ train = pd.read_csv('/home/mnt/rank_test_datasets/fm_test.csv')
 
 
 class DatePreprocess:
-    def __init__(self):
+    def __init__(self, batch_size):
         self.columns_name = ['feature_1', 'feature_2', 'feature_3']
         self.df = self.read_csv('/home/mnt/rank_test_datasets/fm_test.csv')
         self.gender_values_set = set(self.df['feature_1'])
@@ -26,6 +26,7 @@ class DatePreprocess:
                             'feature_3': len(self.key_words_map)}
         self.feature_map = {'feature_1': self.gender_map, 'feature_2': self.category_map,
                             'feature_3': self.key_words_map}
+        self.batch_data_iter = self.get_batch_iter(batch_size)
 
     def get_data(self):
         pass
@@ -49,13 +50,41 @@ class DatePreprocess:
         feature_indices_list = list()
         labels = list()
         for index, row in df.iterrows():
+            row_feature_indices = list()
             labels.append(row['labels'])
             feature_len = 0
             for col in columns:
                 feature_index = self.feature_map.get(col).get(row[col])
-                feature_indices_list.append([index, feature_len + feature_index])
+                row_feature_indices.append([index, feature_len + feature_index])
                 feature_len += self.feature_len.get(col)
+            feature_indices_list.append(row_feature_indices)
         return feature_indices_list, labels
+
+    def batch_generator(self, all_data, batch_size, shuffle=True):
+        """
+        :param all_data : all_data整个数据集
+        :param batch_size: batch_size表示每个batch的大小
+        :param shuffle: 每次是否打乱顺序
+        :return:
+        """
+        all_data = [np.array(d) for d in all_data]
+        data_size = all_data[0].shape[0]
+        print("data size:{}, your choose batch:{}".format(data_size, batch_size))
+        if shuffle:
+            p = np.random.permutation(data_size)
+            all_data = [d[p] for d in all_data]
+
+        batch_count = 0
+        while True:
+            if batch_count * batch_size + batch_size > data_size:
+                batch_count = 0
+                if shuffle:
+                    p = np.random.permutation(data_size)
+                    all_data = [d[p] for d in all_data]
+            start = batch_count * batch_size
+            end = start + batch_size
+            batch_count += 1
+            yield [d[start: end] for d in all_data]
 
     def run_generate(self):
         features, labels = self.generate_sparse_data(self.df, self.columns_name)
@@ -64,11 +93,28 @@ class DatePreprocess:
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
             labels_onehot = sess.run(onehot_func)
-        return features, labels_onehot
+        return features, labels, labels_onehot
+
+    def get_batch_iter(self, batch_size):
+        feature_indice, label, one_hot_label = self.run_generate()
+        self.feature_indice_value = feature_indice
+        self.label_value = label
+        self.onehot_label_value = one_hot_label
+        batch_data_iter = self.batch_generator(feature_indice, label, batch_size)
+        return batch_data_iter
+
+    def next_batch(self):
+        original_batch_x, batch_y = next(self.batch_data_iter)
+        """alter batch_x format to feed tf.SparseTensorValue(indices, values, shape)"""
+        batch_x = list()
+        for i in original_batch_x:
+            batch_x.extend(i)
+        return batch_x, batch_y
 
 
 if __name__ == '__main__':
-    handler = DatePreprocess()
+    batch_size = 3
+    handler = DatePreprocess(batch_size)
     columns_name = ['feature_1', 'feature_2', 'feature_3']
     df = handler.read_csv('/home/mnt/rank_test_datasets/fm_test.csv')
     gender_values_set = set(df['feature_1'])
@@ -80,6 +126,6 @@ if __name__ == '__main__':
     key_words_map = handler.generate_mapping_relation(key_words_set)
     handler.generate_sparse_data(df, columns_name)
 
-    x, y = handler.run_generate()
+    x, y = handler.next_batch()
     print(x)
     print(y)
