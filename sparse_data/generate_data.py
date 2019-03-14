@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time   : 3/4/19 11:03 AM
-# @Author : YangXiangDong
-# @File   : generate_data.py
-
 import pandas as pd
 import numpy as np
 import tensorflow as tf
@@ -106,10 +102,17 @@ class DatePreprocess:
     def next_batch(self):
         original_batch_x, batch_y = next(self.batch_data_iter)
         """alter batch_x format to feed tf.SparseTensorValue(indices, values, shape)"""
-        batch_x = list()
-        for i in original_batch_x:
-            batch_x.extend(i)
-        return batch_x, batch_y
+        """the indices value of tf.SparseTensorValue的SparseValue must be ordered"""
+        batch_row = 0
+        actual_batch_x = list()  #
+        for sub_list in original_batch_x:
+            sub_list.sort()
+            batch_index = list()
+            for row, col in sub_list:
+                batch_index.append([batch_row, col])
+            actual_batch_x.extend(batch_index)
+            batch_row += 1
+        return actual_batch_x, batch_y
 
 
 if __name__ == '__main__':
