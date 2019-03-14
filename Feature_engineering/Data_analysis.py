@@ -2,7 +2,7 @@ import pandas as pd
 import pickle
 from collections import Counter
 
-train = pd.read_csv('/home/johnso/PycharmProjects/News_recommendation/CTR_prediction/avazu_CTR/train.csv',chunksize=20000)
+train = pd.read_csv('/home/johnso/PycharmProjects/News_recommendation/CTR_prediction/avazu_CTR/train_model.csv',chunksize=20000)
 test = pd.read_csv('/home/johnso/PycharmProjects/News_recommendation/CTR_prediction/avazu_CTR/test.csv',chunksize=20000)
 
 C14 = dict()

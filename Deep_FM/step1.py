@@ -39,7 +39,7 @@ device_id = []
 
 
 
-train = pd.read_csv('/home/johnso/PycharmProjects/News_recommendation/CTR_prediction/avazu_CTR/train.csv',chunksize=10000)
+train = pd.read_csv('/home/johnso/PycharmProjects/News_recommendation/CTR_prediction/avazu_CTR/train_model.csv',chunksize=10000)
 
 for data in train:
 

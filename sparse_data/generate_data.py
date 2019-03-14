@@ -4,13 +4,11 @@ import pandas as pd
 import numpy as np
 import tensorflow as tf
 
-train = pd.read_csv('/home/mnt/rank_test_datasets/fm_test.csv')
 
-
-class DatePreprocess:
+class DataPreprocess:
     def __init__(self, batch_size):
         self.columns_name = ['feature_1', 'feature_2', 'feature_3']
-        self.df = self.read_csv('/home/mnt/rank_test_datasets/fm_test.csv')
+        self.df = self.read_csv('fm_test.csv')
         self.gender_values_set = set(self.df['feature_1'])
         self.channel_category_set = set(self.df['feature_2'])
         self.key_words_set = set(self.df['feature_3'])
@@ -117,7 +115,7 @@ class DatePreprocess:
 
 if __name__ == '__main__':
     batch_size = 3
-    handler = DatePreprocess(batch_size)
+    handler = DataPreprocess(batch_size)
     columns_name = ['feature_1', 'feature_2', 'feature_3']
     df = handler.read_csv('/home/mnt/rank_test_datasets/fm_test.csv')
     gender_values_set = set(df['feature_1'])

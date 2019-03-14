@@ -21,7 +21,7 @@ print(y_train[1].shape)
 for i in range(y_train.shape[0]):
     image_raw = y_train[i].tostring()
     example = tf.train.Example(
-        # 需要主要此处是tf.train.Features，下面的是tf.train.Feature，差别在于一个's'
+        # 需要主要此处是tf.train_model.Features，下面的是tf.train_model.Feature，差别在于一个's'
         features=tf.train.Features(
             feature={
                 'image_raw': tf.train.Feature(bytes_list=tf.train.BytesList(value=[image_raw])),

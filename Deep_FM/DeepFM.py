@@ -147,7 +147,7 @@ def train_model(sess, model, epochs=10, print_every=500):
     train_writer = tf.summary.FileWriter('train_logs', sess.graph)
     for e in range(epochs):
         # get training data, iterable
-        train_data = pd.read_csv('../avazu_CTR/train.csv',
+        train_data = pd.read_csv('../avazu_CTR/train_model.csv',
                                  chunksize=model.batch_size)
         # batch_size data
         for data in train_data:
@@ -174,7 +174,7 @@ def train_model(sess, model, epochs=10, print_every=500):
             losses.append(loss*actual_batch_size)
 
             num_samples += actual_batch_size
-            # Record summaries and train.csv-set accuracy
+            # Record summaries and train_model.csv-set accuracy
             train_writer.add_summary(summary, global_step=global_step)
             # print training loss and accuracy
             if global_step % print_every == 0:
@@ -197,7 +197,7 @@ def validation_model(sess, model, print_every=50):
     merged = tf.summary.merge_all()
     test_writer = tf.summary.FileWriter('test_logs', sess.graph)
     # get testing data, iterable
-    validation_data = pd.read_csv('/home/katy/CTR_prediction/avazu_CTR/train.csv',
+    validation_data = pd.read_csv('/home/katy/CTR_prediction/avazu_CTR/train_model.csv',
                                   chunksize=model.batch_size)
     # testing step
     valid_step = 1
@@ -226,7 +226,7 @@ def validation_model(sess, model, print_every=50):
         losses.append(loss*actual_batch_size)
         num_corrects += correct
         num_samples += actual_batch_size
-        # Record summaries and train.csv-set accuracy
+        # Record summaries and train_model.csv-set accuracy
         test_writer.add_summary(summary, global_step=valid_step)
         # print training loss and accuracy
         if valid_step % print_every == 0:

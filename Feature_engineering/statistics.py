@@ -2,7 +2,7 @@ import pandas as pd
 from collections import Counter
 import pickle
 
-# train_data = pd.read_csv('/home/johnso/PycharmProjects/News_recommendation/CTR_prediction/avazu_CTR/train.csv',
+# train_data = pd.read_csv('/home/johnso/PycharmProjects/News_recommendation/CTR_prediction/avazu_CTR/train_model.csv',
 #                          chunksize=1000)
 #
 # device_ids = []

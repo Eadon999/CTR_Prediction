@@ -115,7 +115,7 @@ def train_model(sess, model, epochs=10, print_every=500):
         num_samples = 0
         losses = []
         # get training data, iterable
-        train_data = pd.read_csv('../avazu_CTR/train.csv', chunksize=model.batch_size)
+        train_data = pd.read_csv('../avazu_CTR/train_model.csv', chunksize=model.batch_size)
         # batch_size data
         for data in train_data:
             actual_batch_size = len(data)
@@ -137,7 +137,7 @@ def train_model(sess, model, epochs=10, print_every=500):
             losses.append(loss*actual_batch_size)
 
             num_samples += actual_batch_size
-            # Record summaries and train.csv-set accuracy
+            # Record summaries and train_model.csv-set accuracy
             train_writer.add_summary(summary, global_step=global_step)
             # print training loss and accuracy
             if global_step % print_every == 0:

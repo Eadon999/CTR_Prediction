@@ -35,7 +35,7 @@ if __name__ == '__main__':
                    'app_id', 'device_id', 'app_category', 'device_model', 'device_type',
                    'device_conn_type']
 
-    train = pd.read_csv('/home/johnso/PycharmProjects/News_recommendation/CTR_prediction/avazu_CTR/train.csv',
+    train = pd.read_csv('/home/johnso/PycharmProjects/News_recommendation/CTR_prediction/avazu_CTR/train_model.csv',
                         chunksize=100)
     test = pd.read_csv('/home/johnso/PycharmProjects/News_recommendation/CTR_prediction/avazu_CTR/test.csv',
                         chunksize=100)
