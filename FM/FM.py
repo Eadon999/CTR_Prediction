@@ -74,7 +74,7 @@ class FM:
 
     def add_accuracy(self):
         # accuracy
-        self.correct_prediction = tf.equal(tf.cast(tf.argmax(self.y_out, 1), tf.float32),
+        self.correct_prediction = tf.equal(tf.cast(tf.argmax(self.y_out_prob, 1), tf.float32),
                                            tf.cast(tf.argmax(self.y, 1), tf.float32))
         self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32))
         # add summary to accuracy
