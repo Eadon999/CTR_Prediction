@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     train = pd.read_csv('/home/johnso/PycharmProjects/News_recommendation/CTR_prediction/avazu_CTR/train_model.csv',
                         chunksize=100)
-    test = pd.read_csv('/home/johnso/PycharmProjects/News_recommendation/CTR_prediction/avazu_CTR/test.csv',
+    test = pd.read_csv('/home/johnso/PycharmProjects/News_recommendation/CTR_prediction/avazu_CTR/demo.csv',
                         chunksize=100)
     # loading dicts
     fields_train_dict = {}

@@ -81,7 +81,7 @@ if __name__ == '__main__':
               'device_conn_type']
     batch_size = 512
     train = pd.read_csv('../avazu_CTR/train_frac_0.01.csv', chunksize=batch_size)
-    test = pd.read_csv('../avazu_CTR/test.csv', chunksize=batch_size)
+    test = pd.read_csv('../avazu_CTR/demo.csv', chunksize=batch_size)
     # loading dicts
     fields_dict = {}
     for field in fields:

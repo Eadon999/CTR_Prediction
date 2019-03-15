@@ -94,10 +94,10 @@ def test_model(sess, model, print_every=50):
 
 if __name__ == '__main__':
     '''launching TensorBoard: tensorboard --logdir=path/to/log-directory'''
-    # get mode (train or test)
+    # get mode (train or demo)
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--mode', help='train or test', type=str)
+    parser.add_argument('--mode', help='train or demo', type=str)
     args = parser.parse_args()
     mode = args.mode
     """
@@ -112,7 +112,7 @@ if __name__ == '__main__':
     config['k'] = 40
 
     # data processer
-    csv_data_path = '/home/mnt/test_datasets/test.csv'
+    csv_data_path = '/home/mnt/test_datasets/demo.csv'
 
     data_processor = DataPreprocess(batch_size=5)
 
@@ -130,6 +130,6 @@ if __name__ == '__main__':
         if mode == 'train':
             print('start training...')
             train_model(sess, fm_model, data_processor, epochs=20, print_every=500)
-        if mode == 'test':
+        if mode == 'demo':
             print('start testing...')
             test_model(sess, fm_model)

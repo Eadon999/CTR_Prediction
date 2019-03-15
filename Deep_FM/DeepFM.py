@@ -236,14 +236,14 @@ def validation_model(sess, model, print_every=50):
     # print loss and accuracy of one epoch
     total_correct = num_corrects/num_samples
     total_loss = np.sum(losses)/num_samples
-    print("Overall test loss = {0:.3g} and accuracy of {1:.3g}" \
+    print("Overall demo loss = {0:.3g} and accuracy of {1:.3g}" \
           .format(total_loss,total_correct))
 
 
 def test_model(sess, model, print_every = 50):
     """training model"""
     # get testing data, iterable
-    test_data = pd.read_csv('/home/katy/CTR_prediction/avazu_CTR/test.csv',
+    test_data = pd.read_csv('/home/katy/CTR_prediction/avazu_CTR/demo.csv',
                             chunksize=model.batch_size)
     test_step = 1
     # batch_size data
