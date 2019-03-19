@@ -97,19 +97,28 @@ class DataPreprocess:
         batch_data_iter = self.batch_generator(feature_indice, label, batch_size)
         return batch_data_iter
 
-    def next_batch(self):
-        original_batch_x, batch_y = next(self.batch_data_iter)
-        """alter batch_x format to feed tf.SparseTensorValue(indices, values, shape)"""
-        """the indices value of tf.SparseTensorValue的SparseValue must be ordered"""
+    def reorder_feature_indices(self, original_data):
+        '''
+        reoeder feature one hot index values
+        :param original_data: before reorder data
+        :return:
+        '''
         batch_row = 0
-        actual_batch_x = list()  #
-        for sub_list in original_batch_x:
+        reorder_value = list()  #
+        for sub_list in original_data:
             sub_list.sort()
             batch_index = list()
             for row, col in sub_list:
                 batch_index.append([batch_row, col])
-            actual_batch_x.extend(batch_index)
+            reorder_value.extend(batch_index)
             batch_row += 1
+        return reorder_value
+
+    def next_batch(self):
+        original_batch_x, batch_y = next(self.batch_data_iter)
+        """alter batch_x format to feed tf.SparseTensorValue(indices, values, shape)"""
+        """the indices value of tf.SparseTensorValue的SparseValue must be ordered"""
+        actual_batch_x = self.reorder_feature_indices(original_batch_x)
         return actual_batch_x, batch_y
 
 
