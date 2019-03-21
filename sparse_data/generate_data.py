@@ -98,11 +98,11 @@ class DataPreprocess:
         return batch_data_iter
 
     def reorder_feature_indices(self, original_data):
-        '''
+        """
         reoeder feature one hot index values
         :param original_data: before reorder data
         :return:
-        '''
+        """
         batch_row = 0
         reorder_value = list()  #
         for sub_list in original_data:
