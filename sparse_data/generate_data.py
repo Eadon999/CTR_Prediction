@@ -122,6 +122,63 @@ class DataPreprocess:
         return actual_batch_x, batch_y
 
 
+    def multi_process_target(self, df, labels_list, feature_indices_list):
+        for index, row in df.iterrows():
+            if not pd.isnull(row['label']):
+
+                feature_indices = self.generate_feature_indices(index, row)
+                feature_indices_list.append(feature_indices)
+                labels_list.append(row['label'])
+            else:
+                print('row:{}, labels is Nan, drop the data'.format(index))
+                logging.info('row:{}, labels is Nan, drop the data'.format(index))
+
+    def generate_sparse_data(self, df):
+
+        process_list = list()
+        manager = multiprocessing.Manager()
+        feature_indices_list = manager.list()
+        labels_list = manager.list()
+        sub_size = len(df) // self.n_processes + 1
+
+        for idx in range(self.n_processes):
+            proc = multiprocessing.Process(target=self.multi_process_target,
+                                           args=(df[idx * sub_size: (idx + 1) * sub_size],
+                                                 labels_list, feature_indices_list,))
+            process_list.append(proc)
+
+        for p in process_list:
+            p.start()
+
+        for p in process_list:
+            p.join()
+
+
+    def run(self):
+        self.n_processes = 3
+        self.map_dict = {}
+        # if self.is_new_data:
+        #     self.df_iteration = self.read_csv(csv_path, batch_size)
+        all_time = time.time()
+        feature_f = open('.txt', 'w')
+        label_f = open('.txt', 'w')
+        for iter in self.df_iteration:
+            # x, y = self.generate_sparse_data(iter)
+            #
+            # print(len(x), len(y))
+            batch_time = time.time()
+            batch_data = self.get_sparse_data(iter)
+            feature_list = [json.dumps(i) + '\n' for i in batch_data.feature_train]
+            label_list = [json.dumps(i) + '\n' for i in batch_data.lable_train]
+            feature_f.writelines(feature_list)
+            label_f.writelines(label_list)
+            print('batch write using {}'.format(time.time() - batch_time))
+        print('all write using {}'.format(time.time() - all_time))
+        feature_f.close()
+        label_f.close()
+        print('close end')
+
+
 if __name__ == '__main__':
     batch_size = 3
     handler = DataPreprocess(batch_size)
