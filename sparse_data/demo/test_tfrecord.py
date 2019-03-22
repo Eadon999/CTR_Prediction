@@ -52,7 +52,6 @@ with tf.Session() as sess:
 
             batch_data = sess.run(one_element)
 
-
             batch_row = 0
             reorder_value = list()  #
             for sub_list in batch_data:
@@ -92,3 +91,9 @@ with tf.Session() as sess:
         print(batch_data)
         print('x', reorder_value)
 '''
+
+lists = [1, 2, 3, 4, 5]
+lists = [json.dumps(line) + "\n" for line in lists]
+with open('test_batch.txt', 'w') as f:
+    f.writelines(lists)
+
