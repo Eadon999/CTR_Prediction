@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import json
-
+import math
 # def _parse_function(filename, label):
 #     image_string = tf.read_file(filename)
 #     image_decoded = tf.image.decode_image(image_string)
@@ -35,40 +35,42 @@ one_element = iterator.get_next()
 
 csv_data_path = 'E:/virtualboxshare/rank_test_datasets/tf_record_txt.txt'
 
-data_set = tf.data.TextLineDataset(
-    '/home/mnt/gitlab/personal_project/CTR_Prediction/sparse_data/demo/test.txt')
+# data_set = tf.data.TextLineDataset(
+#     '/home/mnt/gitlab/personal_project/CTR_Prediction/sparse_data/demo/test.txt')
+# data_set = tf.data.TextLineDataset(
+#     '/home/mnt/gitlab/personal_project/CTR_Prediction/sparse_data/demo/test.txt')
 # data_set_y = tf.data.TextLineDataset(
 #     r'E:\virtualboxshare\gitlab\personal_project\CTR_Prediction\sparse_data\demo\test_y.txt')
-dataset = data_set.batch(2).repeat(4)
+# dataset = data_set.batch(2).repeat(4)
 # dataset_y = data_set_y.batch(1).repeat(3)
-iterator = dataset.make_one_shot_iterator()
+# iterator = dataset.make_one_shot_iterator()
 # iterator_y = dataset_y.make_one_shot_iterator()
-one_element = iterator.get_next()
+# one_element = iterator.get_next()
 
-with tf.Session() as sess:
-    i = 0
-    try:
-        while True:
-
-            batch_data = sess.run(one_element)
-
-            batch_row = 0
-            reorder_value = list()  #
-            for sub_list in batch_data:
-                sub_list = json.loads(sub_list.decode())
-                batch_index = list()
-                for row, col in sub_list:
-                    batch_index.append([batch_row, col])
-                reorder_value.extend(batch_index)
-                batch_row += 1
-            i += 1
-            print('==========================', i)
-            print(batch_data)
-            print('x', reorder_value)
-
-
-    except:
-        print(i)
+# with tf.Session() as sess:
+#     i = 0
+#     try:
+#         while True:
+#
+#             batch_data = sess.run(one_element)
+#
+#             batch_row = 0
+#             reorder_value = list()  #
+#             for sub_list in batch_data:
+#                 sub_list = json.loads(sub_list.decode())
+#                 batch_index = list()
+#                 for row, col in sub_list:
+#                     batch_index.append([batch_row, col])
+#                 reorder_value.extend(batch_index)
+#                 batch_row += 1
+#             i += 1
+#             print('==========================', i)
+#             print(batch_data)
+#             print('x', reorder_value)
+#
+#
+#     except:
+#         print(i)
 '''
 
 with tf.Session() as sess:
@@ -91,9 +93,24 @@ with tf.Session() as sess:
         print(batch_data)
         print('x', reorder_value)
 '''
-
-lists = [1, 2, 3, 4, 5]
-lists = [json.dumps(line) + "\n" for line in lists]
-with open('test_batch.txt', 'w') as f:
-    f.writelines(lists)
-
+batch_size = 3
+epochs = 2
+y = [[1, 0], [0, 1], [1, 0]]
+# 此时dataset中的一个元素是(filename, label)
+dataset = tf.data.Dataset.from_tensor_slices(y)
+# 此时dataset中的一个元素是(image_resized_batch, label_batch)
+dataset = dataset.batch(batch_size).repeat(epochs)
+iterator = dataset.make_one_shot_iterator()
+one_element = iterator.get_next()
+with tf.Session() as sess:
+    for epoch in range(epochs):
+        batch_iter = 0
+        batch_num = math.ceil(len(y) / batch_size)
+        for batch in range(batch_num):
+            batch_data = sess.run(one_element)
+            batch_row = 0
+            reorder_value = list()  #
+            batch_iter += 1
+            print('==========================', batch_iter)
+            print(batch_data)
+        print('end batch')
