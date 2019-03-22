@@ -93,16 +93,25 @@ with tf.Session() as sess:
         print(batch_data)
         print('x', reorder_value)
 '''
-batch_size = 3
-epochs = 2
-y = [[1, 0], [0, 1], [1, 0]]
-# 此时dataset中的一个元素是(filename, label)
-dataset = tf.data.Dataset.from_tensor_slices(y)
-# 此时dataset中的一个元素是(image_resized_batch, label_batch)
-dataset = dataset.batch(batch_size).repeat(epochs)
-iterator = dataset.make_one_shot_iterator()
-one_element = iterator.get_next()
+# batch_size = 3
+# epochs = 2
+# y = [[1, 0], [0, 1], [1, 0]]
+# # 此时dataset中的一个元素是(filename, label)
+# dataset = tf.data.Dataset.from_tensor_slices(y)
+# # 此时dataset中的一个元素是(image_resized_batch, label_batch)
+# dataset = dataset.batch(batch_size).repeat(epochs)
+# iterator = dataset.make_one_shot_iterator()
+# one_element = iterator.get_next()
 with tf.Session() as sess:
+    batch_size = 3
+    epochs = 2
+    y = [[1, 0], [0, 1], [1, 0]]
+    # 此时dataset中的一个元素是(filename, label)
+    dataset = tf.data.Dataset.from_tensor_slices(y)
+    # 此时dataset中的一个元素是(image_resized_batch, label_batch)
+    dataset = dataset.batch(batch_size).repeat(epochs)
+    iterator = dataset.make_one_shot_iterator()
+    one_element = iterator.get_next()
     for epoch in range(epochs):
         batch_iter = 0
         batch_num = math.ceil(len(y) / batch_size)
@@ -114,3 +123,4 @@ with tf.Session() as sess:
             print('==========================', batch_iter)
             print(batch_data)
         print('end batch')
+
