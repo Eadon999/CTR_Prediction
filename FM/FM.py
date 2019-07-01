@@ -52,8 +52,14 @@ class FM:
             v = tf.get_variable('v', shape=[self.feature_dim, self.k],
                                 initializer=tf.truncated_normal_initializer(mean=0, stddev=0.01))
 
+            # self.interaction_terms = tf.multiply(0.5,
+            #                                      tf.reduce_mean(
+            #                                          tf.subtract(
+            #                                              tf.pow(tf.sparse_tensor_dense_matmul(self.X, v), 2),
+            #                                              tf.sparse_tensor_dense_matmul(self.X, tf.pow(v, 2))),
+            #                                          1, keep_dims=True))
             self.interaction_terms = tf.multiply(0.5,
-                                                 tf.reduce_mean(
+                                                 tf.reduce_sum(
                                                      tf.subtract(
                                                          tf.pow(tf.sparse_tensor_dense_matmul(self.X, v), 2),
                                                          tf.sparse_tensor_dense_matmul(self.X, tf.pow(v, 2))),

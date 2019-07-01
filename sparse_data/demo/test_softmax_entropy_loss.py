@@ -23,6 +23,10 @@ logits这个操作的输入logits同样是是未经softmax缩放的，该操作�
 """
 
 cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=labels)
+sess = tf.Session()
+init = tf.global_variables_initializer()
+sess.run(init)  # make sure you do this!
+print(sess.run(cross_entropy))
 
 """
 tf.nn.softmax_cross_entropy_with_logits(_sentinel=None, labels=None, logits=None, dim=-1, name=None)
